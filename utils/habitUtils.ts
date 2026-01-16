@@ -11,6 +11,75 @@ export const formatDate = (year: number, month: number, day: number) => {
   return `${year}-${m}-${d}`;
 };
 
+// Helper to get Today and Yesterday in YYYY-MM-DD format based on Local Time
+const getReferenceDates = () => {
+  const today = new Date();
+  const yesterday = new Date(today);
+  yesterday.setDate(yesterday.getDate() - 1);
+
+  return {
+    todayStr: formatDate(today.getFullYear(), today.getMonth(), today.getDate()),
+    yesterdayStr: formatDate(yesterday.getFullYear(), yesterday.getMonth(), yesterday.getDate())
+  };
+};
+
+export const calculateStreaks = (dates: string[]) => {
+  const sortedDates = Array.from(new Set(dates)).sort();
+  const { todayStr, yesterdayStr } = getReferenceDates();
+
+  // 1. Calculate Best Streak
+  let bestStreak = 0;
+  let tempStreak = 0;
+  let lastDateStr = '';
+
+  sortedDates.forEach(dateStr => {
+    if (!lastDateStr) {
+      tempStreak = 1;
+    } else {
+      const d1 = new Date(lastDateStr);
+      const d2 = new Date(dateStr);
+      // Diff in ms -> days
+      const diffTime = Math.abs(d2.getTime() - d1.getTime());
+      const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24)); 
+      
+      if (diffDays === 1) {
+        tempStreak++;
+      } else {
+        tempStreak = 1;
+      }
+    }
+    lastDateStr = dateStr;
+    if (tempStreak > bestStreak) bestStreak = tempStreak;
+  });
+
+  // 2. Calculate Current Streak
+  let currentStreak = 0;
+  
+  // Check if the streak is alive (completed today OR yesterday)
+  const isAlive = sortedDates.includes(todayStr) || sortedDates.includes(yesterdayStr);
+  
+  if (isAlive) {
+    // Start counting backwards from today or yesterday
+    let checkDate = new Date();
+    // If we haven't done it today yet, start checking from yesterday
+    if (!sortedDates.includes(todayStr)) {
+      checkDate.setDate(checkDate.getDate() - 1);
+    }
+
+    while (true) {
+      const checkStr = formatDate(checkDate.getFullYear(), checkDate.getMonth(), checkDate.getDate());
+      if (sortedDates.includes(checkStr)) {
+        currentStreak++;
+        checkDate.setDate(checkDate.getDate() - 1);
+      } else {
+        break;
+      }
+    }
+  }
+
+  return { currentStreak, bestStreak };
+};
+
 export const calculateDashboardStats = (habits: Habit[], entries: HabitEntry[], year: number, month: number): DashboardStats => {
   if (habits.length === 0) return { totalHabits: 0, overallCompletion: 0, currentStreak: 0, bestStreak: 0, completedDays: 0 };
 
@@ -26,46 +95,9 @@ export const calculateDashboardStats = (habits: Habit[], entries: HabitEntry[], 
 
   const overallCompletion = totalPossible > 0 ? (totalCompleted / totalPossible) * 100 : 0;
 
-  // Streak Calculation
-  // Get all unique completed dates across all time, sorted
-  const allCompletedDates = Array.from(new Set(entries.filter(e => e.completed).map(e => e.date))).sort();
-  
-  let currentStreak = 0;
-  let bestStreak = 0;
-  let tempStreak = 0;
-  let lastDateStr = '';
-
-  allCompletedDates.forEach(dateStr => {
-    if (!lastDateStr) {
-      tempStreak = 1;
-    } else {
-      // Calculate diff in days between strings YYYY-MM-DD safely
-      const d1 = new Date(lastDateStr);
-      const d2 = new Date(dateStr);
-      const diffTime = Math.abs(d2.getTime() - d1.getTime());
-      const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24)); 
-      
-      if (diffDays === 1) {
-        tempStreak++;
-      } else {
-        tempStreak = 1;
-      }
-    }
-    lastDateStr = dateStr;
-    if (tempStreak > bestStreak) bestStreak = tempStreak;
-  });
-
-  // Check if current streak is active (today or yesterday was completed)
-  const todayStr = new Date().toISOString().split('T')[0];
-  const yesterday = new Date();
-  yesterday.setDate(yesterday.getDate() - 1);
-  const yesterdayStr = yesterday.toISOString().split('T')[0];
-
-  if (allCompletedDates.includes(todayStr) || allCompletedDates.includes(yesterdayStr)) {
-    currentStreak = tempStreak;
-  } else {
-    currentStreak = 0;
-  }
+  // Global Streak Calculation (Any habit completed counts towards global streak)
+  const allCompletedDates = entries.filter(e => e.completed).map(e => e.date);
+  const { currentStreak, bestStreak } = calculateStreaks(allCompletedDates);
 
   return {
     totalHabits: habits.length,

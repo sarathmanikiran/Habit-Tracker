@@ -13,7 +13,8 @@ import {
   calculateDashboardStats, 
   getDailyStats, 
   getWeeklyStats,
-  getHabitRanking
+  getHabitRanking,
+  calculateStreaks
 } from '../utils/habitUtils';
 import { MONTHS, HABIT_COLORS } from '../constants';
 
@@ -151,7 +152,7 @@ const Dashboard: React.FC<DashboardProps> = ({ user }) => {
         {/* KPI Cards Mini */}
         <div className="flex space-x-6">
            <div className="text-right">
-              <p className="text-[10px] font-bold uppercase text-slate-500">Streak</p>
+              <p className="text-[10px] font-bold uppercase text-slate-500">Global Streak</p>
               <p className="text-xl font-black text-emerald-500">{stats.currentStreak} <span className="text-xs text-slate-500 font-normal">days</span></p>
            </div>
            <div className="text-right">
@@ -369,7 +370,7 @@ const Dashboard: React.FC<DashboardProps> = ({ user }) => {
                <div className="flex mb-2">
                   <div className="w-64 flex-shrink-0 flex items-end justify-between pr-4 pb-2 border-r border-slate-200 dark:border-slate-800">
                      <span className="text-[10px] font-bold uppercase text-slate-400">Habit Name</span>
-                     <span className="text-[10px] font-bold uppercase text-slate-400 mr-2">Goal</span>
+                     <span className="text-[10px] font-bold uppercase text-slate-400 mr-2">Stats</span>
                   </div>
                   <div className="flex-1 flex justify-between px-2">
                      {daysArray.map(d => (
@@ -384,22 +385,35 @@ const Dashboard: React.FC<DashboardProps> = ({ user }) => {
                {habits.length === 0 ? (
                   <div className="py-12 text-center text-slate-500 text-sm">Start tracking by adding a habit above.</div>
                ) : (
-                  habits.map(habit => (
+                  habits.map(habit => {
+                    // Calculate individual streak for this habit
+                    const habitEntries = entries.filter(e => e.habitId === habit.id && e.completed).map(e => e.date);
+                    const { currentStreak, bestStreak } = calculateStreaks(habitEntries);
+
+                    return (
                      <div key={habit.id} className="flex items-center mb-1 hover:bg-slate-50 dark:hover:bg-slate-800/40 rounded-lg transition-colors py-1 group/row">
                         {/* Name Col */}
-                        <div className="w-64 flex-shrink-0 flex items-center justify-between pr-4 border-r border-slate-200 dark:border-slate-800 h-8">
-                           <div className="flex items-center space-x-3 pl-2">
-                              <div className="w-2 h-8 rounded-sm" style={{ backgroundColor: habit.color }}></div>
-                              <span className="font-bold text-xs text-slate-700 dark:text-slate-300 truncate max-w-[140px]">{habit.name}</span>
+                        <div className="w-64 flex-shrink-0 flex items-center justify-between pr-4 border-r border-slate-200 dark:border-slate-800 h-10">
+                           <div className="flex items-center space-x-3 pl-2 overflow-hidden">
+                              <div className="w-2 h-8 rounded-sm shrink-0" style={{ backgroundColor: habit.color }}></div>
+                              <div className="flex flex-col min-w-0">
+                                <span className="font-bold text-xs text-slate-700 dark:text-slate-300 truncate">{habit.name}</span>
+                                <div className="flex items-center space-x-2 mt-0.5">
+                                   <span className="text-[9px] font-bold text-emerald-500 flex items-center" title="Current Streak">
+                                      🔥 {currentStreak}
+                                   </span>
+                                   <span className="text-[9px] text-slate-400 flex items-center" title="Best Streak">
+                                      🏆 {bestStreak}
+                                   </span>
+                                </div>
+                              </div>
                            </div>
-                           <div className="flex items-center space-x-3">
-                              <span className="text-[10px] font-mono text-slate-500">{habit.monthlyGoal}</span>
-                              <button onClick={() => handleDeleteHabit(habit.id)} className="text-slate-300 hover:text-red-500 opacity-0 group-hover/row:opacity-100 transition-opacity">
-                                 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className="w-3 h-3">
-                                   <path fillRule="evenodd" d="M8.75 1A2.75 2.75 0 006 3.75v.443c-.795.077-1.584.176-2.365.298a.75.75 0 10.23 1.482l.149-.022.841 10.518A2.75 2.75 0 007.596 19h4.807a2.75 2.75 0 002.742-2.53l.841-10.52.149.023a.75.75 0 00.23-1.482A41.03 41.03 0 0014 4.193V3.75A2.75 2.75 0 0011.25 1h-2.5zM10 4c.84 0 1.673.025 2.5.075V3.75c0-.69-.56-1.25-1.25-1.25h-2.5c-.69 0-1.25.56-1.25 1.25v.325C8.327 4.025 9.16 4 10 4zM8.58 7.72a.75.75 0 00-1.5.06l.3 7.5a.75.75 0 101.5-.06l-.3-7.5zm4.34.06a.75.75 0 10-1.5-.06l-.3 7.5a.75.75 0 101.5.06l.3-7.5z" clipRule="evenodd" />
-                                 </svg>
-                              </button>
-                           </div>
+                           
+                           <button onClick={() => handleDeleteHabit(habit.id)} className="text-slate-300 hover:text-red-500 opacity-0 group-hover/row:opacity-100 transition-opacity">
+                              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className="w-3 h-3">
+                                <path fillRule="evenodd" d="M8.75 1A2.75 2.75 0 006 3.75v.443c-.795.077-1.584.176-2.365.298a.75.75 0 10.23 1.482l.149-.022.841 10.518A2.75 2.75 0 007.596 19h4.807a2.75 2.75 0 002.742-2.53l.841-10.52.149.023a.75.75 0 00.23-1.482A41.03 41.03 0 0014 4.193V3.75A2.75 2.75 0 0011.25 1h-2.5zM10 4c.84 0 1.673.025 2.5.075V3.75c0-.69-.56-1.25-1.25-1.25h-2.5c-.69 0-1.25.56-1.25 1.25v.325C8.327 4.025 9.16 4 10 4zM8.58 7.72a.75.75 0 00-1.5.06l.3 7.5a.75.75 0 101.5-.06l-.3-7.5zm4.34.06a.75.75 0 10-1.5-.06l-.3 7.5a.75.75 0 101.5.06l.3-7.5z" clipRule="evenodd" />
+                              </svg>
+                           </button>
                         </div>
 
                         {/* Checkboxes Grid */}
@@ -437,7 +451,8 @@ const Dashboard: React.FC<DashboardProps> = ({ user }) => {
                            })}
                         </div>
                      </div>
-                  ))
+                  );
+                })
                )}
             </div>
          </div>
