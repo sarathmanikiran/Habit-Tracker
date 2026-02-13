@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>HabitIntel</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <script>
+      tailwind.config = {
+        darkMode: 'class',
+        theme: {
+          extend: {
+            fontFamily: {
+              sans: ['Inter', 'sans-serif'],
+            },
+            colors: {
+              primary: '#3B82F6',
+              success: '#22C55E',
+              accent: '#8B5CF6',
+              warning: '#F59E0B',
+              dark: '#0F172A',
+              'dark-card': '#1E293B'
+            }
+          }
+        }
+      }
+    </script>
+    <style>
+      /* Hide scrollbar for clean UI but allow functionality */
+      .no-scrollbar::-webkit-scrollbar {
+        display: none;
+      }
+      .no-scrollbar {
+        -ms-overflow-style: none;
+        scrollbar-width: none;
+      }
+      @media print {
+        @page {
+          size: landscape;
+          margin: 1cm;
+        }
+        body {
+          background-color: white !important;
+          color: black !important;
+        }
+        .no-print {
+          display: none !important;
+        }
+        /* Force scroll containers to expand */
+        .print-scroll-expand {
+          overflow: visible !important;
+          max-height: none !important;
+          height: auto !important;
+          width: 100% !important;
+          display: block !important;
+        }
+        /* Ensure sticky headers don't float in weird places */
+        .sticky {
+          position: static !important;
+        }
+        /* Hide shadows and backgrounds for clean print */
+        .shadow-sm, .shadow-md, .shadow-lg {
+          box-shadow: none !important;
+        }
+        .bg-white, .dark\:bg-dark-card {
+          background-color: transparent !important;
+          border: 1px solid #ddd !important;
+        }
+      }
+    </style>
+  <script type="importmap">
+{
+  "imports": {
+    "react/": "https://esm.sh/react@^19.2.4/",
+    "react": "https://esm.sh/react@^19.2.4",
+    "react-dom/client": "https://esm.sh/react-dom@^19.2.4/client",
+    "react-dom": "https://esm.sh/react-dom@^19.2.4",
+    "axios": "https://esm.sh/axios@^1.13.5",
+    "@dnd-kit/utilities": "https://esm.sh/@dnd-kit/utilities@^3.2.2",
+    "@dnd-kit/core": "https://esm.sh/@dnd-kit/core@^6.3.1",
+    "@dnd-kit/sortable": "https://esm.sh/@dnd-kit/sortable@^10.0.0",
+    "recharts": "https://esm.sh/recharts@^3.7.0",
+    "dayjs/": "https://esm.sh/dayjs@^1.11.19/",
+    "dayjs": "https://esm.sh/dayjs@^1.11.19",
+    "react-dom/": "https://esm.sh/react-dom@^19.2.4/"
+  }
+}
+</script>
+</head>
+  <body class="bg-slate-50 dark:bg-dark text-slate-900 dark:text-slate-100 transition-colors duration-200">
+    <div id="root"></div>
+    <script type="module" src="./index.tsx"></script>
+  </body>
+</html>
