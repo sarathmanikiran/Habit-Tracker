@@ -47,8 +47,6 @@ const SlotRow: React.FC<SlotRowProps> = ({
   };
 
   // Determine active segment for the row based on the viewed month context.
-  // We look for a segment that overlaps with the current month view.
-  // If multiple exist, we prioritize the one active at the end of the month (latest in view).
   const monthStartStr = days[0].format('YYYY-MM-DD');
   const monthEndStr = days[days.length - 1].format('YYYY-MM-DD');
   
@@ -59,8 +57,6 @@ const SlotRow: React.FC<SlotRowProps> = ({
     (s.endDate === null || s.endDate >= monthStartStr)
   );
 
-  // Pick the most relevant one to display as the label (e.g., the last one in the list, assuming sorting or creation order)
-  // Or simply the one active 'today' if within the month, otherwise the last one.
   const activeSegment = slotSegments.length > 0 ? slotSegments[slotSegments.length - 1] : undefined;
 
   return (
@@ -83,7 +79,7 @@ const SlotRow: React.FC<SlotRowProps> = ({
             <button 
               type="button"
               onClick={() => onDeleteSlot(slot._id)}
-              className="text-slate-300 hover:text-red-500 transition-colors p-1 opacity-0 group-hover:opacity-100"
+              className="text-slate-300 hover:text-red-500 transition-colors p-1 opacity-100 sm:opacity-0 sm:group-hover:opacity-100"
               title="Delete Time Slot"
             >
               <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" viewBox="0 0 20 20" fill="currentColor">
@@ -99,10 +95,14 @@ const SlotRow: React.FC<SlotRowProps> = ({
                   className="w-2 h-2 rounded-full mr-2 flex-shrink-0" 
                   style={{ backgroundColor: activeSegment.color }} 
                 />
-                <span className="text-sm font-medium truncate text-slate-700 dark:text-slate-200 mr-2 max-w-[80px] sm:max-w-[120px]" title={activeSegment.name}>
+                <button 
+                  onClick={() => onEditSegment(activeSegment)}
+                  className="text-sm font-medium truncate text-slate-700 dark:text-slate-200 mr-2 max-w-[80px] sm:max-w-[120px] hover:text-primary hover:underline text-left focus:outline-none" 
+                  title="Edit Habit"
+                >
                   {activeSegment.name}
-                </span>
-                <div className="flex items-center opacity-0 group-hover/edit:opacity-100 transition-opacity">
+                </button>
+                <div className="flex items-center opacity-100 sm:opacity-0 sm:group-hover/edit:opacity-100 transition-opacity">
                   <button
                     onClick={() => onEditSegment(activeSegment)}
                     className="text-slate-400 hover:text-primary transition-colors p-1"

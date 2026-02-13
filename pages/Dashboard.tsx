@@ -405,7 +405,7 @@ const Dashboard: React.FC = () => {
                   {daysInMonth.map(d => {
                       const isToday = dateHelpers.isToday(d.format('YYYY-MM-DD'));
                       return (
-                          <div key={d.toString()} className="min-w-[4rem] sm:min-w-[2rem] m-0.5 sm:m-1 flex flex-col items-center flex-shrink-0">
+                          <div key={d.toString()} className="min-w-[3rem] sm:min-w-[2rem] m-0.5 sm:m-1 flex flex-col items-center flex-shrink-0">
                               <span className={`text-[10px] mb-0.5 ${isToday ? 'text-green-600 font-bold' : 'text-slate-400'}`}>
                                   {d.date()}
                               </span>
