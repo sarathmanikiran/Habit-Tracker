@@ -186,6 +186,36 @@ export const createSegment = async (slotId: string, name: string, color: string,
   }
 };
 
+export const updateSegment = async (id: string, name: string, color: string) => {
+  try {
+    return await client.put<HabitSegment>(`/segments/${id}`, { name, color });
+  } catch (err) {
+    const segments = getLocal<HabitSegment>(STORAGE_KEYS.SEGMENTS);
+    const index = segments.findIndex(s => s._id === id);
+    if (index !== -1) {
+      segments[index] = { ...segments[index], name, color };
+      setLocal(STORAGE_KEYS.SEGMENTS, segments);
+      return { data: segments[index] };
+    }
+    throw new Error('Segment not found locally');
+  }
+};
+
+export const deleteSegment = async (id: string) => {
+  try {
+    return await client.delete(`/segments/${id}`);
+  } catch (err) {
+    const segments = getLocal<HabitSegment>(STORAGE_KEYS.SEGMENTS).filter(s => s._id !== id);
+    setLocal(STORAGE_KEYS.SEGMENTS, segments);
+    
+    // Remove entries
+    const entries = getLocal<HabitEntry>(STORAGE_KEYS.ENTRIES).filter(e => e.segmentId !== id);
+    setLocal(STORAGE_KEYS.ENTRIES, entries);
+    
+    return { data: { success: true } };
+  }
+};
+
 // Entries
 export const getEntries = async (month: string) => {
   const deviceId = getDeviceId();

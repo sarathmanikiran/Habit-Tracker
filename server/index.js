@@ -96,8 +96,13 @@ app.delete('/api/slots/:id', async (req, res) => {
 app.get('/api/segments/:deviceId', async (req, res) => {
   try {
     const { month } = req.query; // YYYY-MM
+    
+    // Calculate accurate end of month
+    const [year, mon] = month.split('-').map(Number);
+    const daysInMonth = new Date(year, mon, 0).getDate();
+    
     const startOfMonth = `${month}-01`;
-    const endOfMonth = `${month}-31`; // Loose end for query
+    const endOfMonth = `${month}-${daysInMonth}`;
 
     // Find segments that overlap with this month
     // Created BEFORE end of month AND (Ended AFTER start of month OR No End Date)
@@ -144,6 +149,30 @@ app.post('/api/segments', async (req, res) => {
       deviceId, slotId, name, color, startDate
     });
     res.json(segment);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+app.put('/api/segments/:id', async (req, res) => {
+  try {
+    const { name, color } = req.body;
+    const segment = await HabitSegment.findByIdAndUpdate(
+      req.params.id, 
+      { name, color },
+      { new: true }
+    );
+    res.json(segment);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+app.delete('/api/segments/:id', async (req, res) => {
+  try {
+    await HabitSegment.findByIdAndDelete(req.params.id);
+    await HabitEntry.deleteMany({ segmentId: req.params.id });
+    res.json({ success: true });
   } catch (err) {
     res.status(500).json({ error: err.message });
   }

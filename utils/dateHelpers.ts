@@ -6,16 +6,9 @@ dayjs.extend(isoWeek);
 dayjs.extend(isBetween);
 
 export const getDaysInMonth = (date: dayjs.Dayjs) => {
+  const daysInMonth = date.daysInMonth();
   const start = date.startOf('month');
-  const end = date.endOf('month');
-  const days = [];
-  
-  let curr = start;
-  while (curr.isBefore(end) || curr.isSame(end, 'day')) {
-    days.push(curr);
-    curr = curr.add(1, 'day');
-  }
-  return days;
+  return Array.from({ length: daysInMonth }, (_, i) => start.add(i, 'day'));
 };
 
 export const formatDate = (date: dayjs.Dayjs) => date.format('YYYY-MM-DD');

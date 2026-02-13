@@ -13,6 +13,8 @@ interface SlotRowProps {
   entries: HabitEntry[];
   onToggle: (segmentId: string, date: string, currentStatus: boolean) => void;
   onAddSegment: (slotId: string) => void;
+  onEditSegment: (segment: HabitSegment) => void;
+  onDeleteSegment: (segmentId: string) => void;
   onDeleteSlot: (slotId: string) => void;
 }
 
@@ -23,6 +25,8 @@ const SlotRow: React.FC<SlotRowProps> = ({
   entries,
   onToggle,
   onAddSegment,
+  onEditSegment,
+  onDeleteSegment,
   onDeleteSlot
 }) => {
   const {
@@ -42,12 +46,22 @@ const SlotRow: React.FC<SlotRowProps> = ({
     position: 'relative' as const,
   };
 
-  // Determine active segment for the row based on the first day of the month or currently active
-  const todayStr = dayjs().format('YYYY-MM-DD');
-  const activeSegment = segments.find(s => 
+  // Determine active segment for the row based on the viewed month context.
+  // We look for a segment that overlaps with the current month view.
+  // If multiple exist, we prioritize the one active at the end of the month (latest in view).
+  const monthStartStr = days[0].format('YYYY-MM-DD');
+  const monthEndStr = days[days.length - 1].format('YYYY-MM-DD');
+  
+  // Find segments for this slot that overlap with the month
+  const slotSegments = segments.filter(s => 
     s.slotId === slot._id && 
-    (s.endDate === null || s.endDate >= todayStr)
-  ) || segments.filter(s => s.slotId === slot._id).pop();
+    s.startDate <= monthEndStr && 
+    (s.endDate === null || s.endDate >= monthStartStr)
+  );
+
+  // Pick the most relevant one to display as the label (e.g., the last one in the list, assuming sorting or creation order)
+  // Or simply the one active 'today' if within the month, otherwise the last one.
+  const activeSegment = slotSegments.length > 0 ? slotSegments[slotSegments.length - 1] : undefined;
 
   return (
     <div
@@ -69,8 +83,8 @@ const SlotRow: React.FC<SlotRowProps> = ({
             <button 
               type="button"
               onClick={() => onDeleteSlot(slot._id)}
-              className="text-slate-300 hover:text-red-500 transition-colors p-1"
-              title="Delete Slot"
+              className="text-slate-300 hover:text-red-500 transition-colors p-1 opacity-0 group-hover:opacity-100"
+              title="Delete Time Slot"
             >
               <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" viewBox="0 0 20 20" fill="currentColor">
                 <path fillRule="evenodd" d="M9 2a1 1 0 00-.894.553L7.382 4H4a1 1 0 000 2v10a2 2 0 002 2h8a2 2 0 002-2V6a1 1 0 100-2h-3.382l-.724-1.447A1 1 0 0011 2H9zM7 8a1 1 0 012 0v6a1 1 0 11-2 0V8zm5-1a1 1 0 00-1 1v6a1 1 0 102 0V8a1 1 0 00-1-1z" clipRule="evenodd" />
@@ -80,14 +94,34 @@ const SlotRow: React.FC<SlotRowProps> = ({
           
           <div className="mt-1">
             {activeSegment ? (
-              <div className="flex items-center">
+              <div className="flex items-center group/edit">
                 <div 
                   className="w-2 h-2 rounded-full mr-2 flex-shrink-0" 
                   style={{ backgroundColor: activeSegment.color }} 
                 />
-                <span className="text-sm font-medium truncate text-slate-700 dark:text-slate-200" title={activeSegment.name}>
+                <span className="text-sm font-medium truncate text-slate-700 dark:text-slate-200 mr-2 max-w-[80px] sm:max-w-[120px]" title={activeSegment.name}>
                   {activeSegment.name}
                 </span>
+                <div className="flex items-center opacity-0 group-hover/edit:opacity-100 transition-opacity">
+                  <button
+                    onClick={() => onEditSegment(activeSegment)}
+                    className="text-slate-400 hover:text-primary transition-colors p-1"
+                    title="Edit Habit"
+                  >
+                    <svg xmlns="http://www.w3.org/2000/svg" className="h-3.5 w-3.5" viewBox="0 0 20 20" fill="currentColor">
+                      <path d="M13.586 3.586a2 2 0 112.828 2.828l-.793.793-2.828-2.828.793-.793zM11.379 5.793L3 14.172V17h2.828l8.38-8.379-2.83-2.828z" />
+                    </svg>
+                  </button>
+                  <button
+                    onClick={() => onDeleteSegment(activeSegment._id)}
+                    className="text-slate-400 hover:text-red-500 transition-colors p-1"
+                    title="Delete Habit"
+                  >
+                    <svg xmlns="http://www.w3.org/2000/svg" className="h-3.5 w-3.5" viewBox="0 0 20 20" fill="currentColor">
+                      <path fillRule="evenodd" d="M9 2a1 1 0 00-.894.553L7.382 4H4a1 1 0 000 2v10a2 2 0 002 2h8a2 2 0 002-2V6a1 1 0 100-2h-3.382l-.724-1.447A1 1 0 0011 2H9zM7 8a1 1 0 012 0v6a1 1 0 11-2 0V8zm5-1a1 1 0 00-1 1v6a1 1 0 102 0V8a1 1 0 00-1-1z" clipRule="evenodd" />
+                    </svg>
+                  </button>
+                </div>
               </div>
             ) : (
               <button 

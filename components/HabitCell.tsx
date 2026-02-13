@@ -15,7 +15,7 @@ const HabitCell: React.FC<HabitCellProps> = ({ date, isActive, isCompleted, colo
   if (!isActive) {
     // Inactive placeholder
     return (
-      <div className="min-w-[3.5rem] h-14 sm:min-w-[2rem] sm:h-8 m-0.5 sm:m-1 rounded-xl bg-slate-100 dark:bg-slate-800 opacity-20 cursor-default flex-shrink-0" />
+      <div className="min-w-[4rem] h-16 sm:min-w-[2rem] sm:h-8 m-0.5 sm:m-1 rounded-xl bg-slate-100 dark:bg-slate-800 opacity-20 cursor-default flex-shrink-0" />
     );
   }
 
@@ -24,7 +24,7 @@ const HabitCell: React.FC<HabitCellProps> = ({ date, isActive, isCompleted, colo
       type="button"
       onClick={onToggle}
       className={`
-        min-w-[3.5rem] h-14 sm:min-w-[2rem] sm:h-8 m-0.5 sm:m-1 rounded-xl transition-all duration-300 ease-out border flex-shrink-0
+        min-w-[4rem] h-16 sm:min-w-[2rem] sm:h-8 m-0.5 sm:m-1 rounded-xl transition-all duration-300 ease-out border flex-shrink-0
         flex items-center justify-center cursor-pointer relative group
         ${isCompleted ? 'scale-100' : 'scale-95 sm:scale-90 hover:scale-100'}
         ${today && !isCompleted ? 'ring-2 ring-offset-1 ring-offset-slate-50 dark:ring-offset-dark ring-slate-400' : ''}
@@ -38,7 +38,7 @@ const HabitCell: React.FC<HabitCellProps> = ({ date, isActive, isCompleted, colo
     >
       {/* Mobile-optimized touch target checkmark */}
       {isCompleted && (
-        <svg xmlns="http://www.w3.org/2000/svg" className="h-8 w-8 sm:h-5 sm:w-5 text-white drop-shadow-sm" viewBox="0 0 20 20" fill="currentColor">
+        <svg xmlns="http://www.w3.org/2000/svg" className="h-10 w-10 sm:h-5 sm:w-5 text-white drop-shadow-sm" viewBox="0 0 20 20" fill="currentColor">
           <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
         </svg>
       )}

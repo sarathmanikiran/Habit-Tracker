@@ -30,10 +30,15 @@ const Dashboard: React.FC = () => {
   const [showAddSlot, setShowAddSlot] = useState(false);
   const [newSlotTime, setNewSlotTime] = useState('08:00');
   
+  // Add Segment Modal State
   const [showAddSegment, setShowAddSegment] = useState(false);
   const [selectedSlotId, setSelectedSlotId] = useState<string | null>(null);
   const [newSegmentName, setNewSegmentName] = useState('');
   const [newSegmentColor, setNewSegmentColor] = useState(COLORS[0]);
+
+  // Edit Segment Modal State
+  const [showEditSegment, setShowEditSegment] = useState(false);
+  const [editingSegment, setEditingSegment] = useState<HabitSegment | null>(null);
 
   // DnD Sensors
   const sensors = useSensors(
@@ -87,6 +92,7 @@ const Dashboard: React.FC = () => {
   }, [loadMonthData]);
 
   // --- Handlers ---
+
   const handleCreateProfile = async () => {
     if (!usernameInput.trim()) return;
     setActionLoading(true);
@@ -116,7 +122,7 @@ const Dashboard: React.FC = () => {
   };
 
   const handleDeleteSlot = async (id: string) => {
-    if(!window.confirm("Delete this slot and all its habits?")) return;
+    if(!window.confirm("Delete this time slot and all its habits?")) return;
     try {
         await api.deleteSlot(id);
         loadMonthData();
@@ -139,6 +145,51 @@ const Dashboard: React.FC = () => {
         console.error(e); 
     } finally {
         setActionLoading(false);
+    }
+  };
+
+  const handleEditSegmentClick = (segment: HabitSegment) => {
+    setEditingSegment(segment);
+    setNewSegmentName(segment.name);
+    setNewSegmentColor(segment.color);
+    setShowEditSegment(true);
+  };
+
+  const handleSaveSegment = async () => {
+    if (!editingSegment || !newSegmentName) return;
+    setActionLoading(true);
+    try {
+      await api.updateSegment(editingSegment._id, newSegmentName, newSegmentColor);
+      setShowEditSegment(false);
+      loadMonthData();
+    } catch(e) {
+      console.error(e);
+    } finally {
+      setActionLoading(false);
+    }
+  };
+
+  const handleDeleteSegmentDirectly = async (segmentId: string) => {
+    if(!window.confirm("Are you sure you want to delete this habit? All progress will be lost.")) return;
+    try {
+        await api.deleteSegment(segmentId);
+        loadMonthData();
+    } catch (e) { console.error(e); }
+  };
+
+  const handleDeleteSegmentFromModal = async () => {
+    if (!editingSegment) return;
+    if(!window.confirm("Are you sure you want to delete this habit? All progress for this habit will be lost.")) return;
+    
+    setActionLoading(true);
+    try {
+      await api.deleteSegment(editingSegment._id);
+      setShowEditSegment(false);
+      loadMonthData();
+    } catch(e) {
+      console.error(e);
+    } finally {
+      setActionLoading(false);
     }
   };
 
@@ -271,7 +322,8 @@ const Dashboard: React.FC = () => {
   }
 
   return (
-    <div className="min-h-screen bg-slate-50 dark:bg-dark pb-20">
+    <div className="min-h-screen bg-slate-50 dark:bg-dark pb-20 relative">
+
       {/* Navbar */}
       <nav className="bg-white dark:bg-dark-card border-b border-slate-200 dark:border-slate-800 px-6 py-4 flex justify-between items-center sticky top-0 z-40 no-print shadow-sm">
         <div className="flex items-center gap-2">
@@ -353,7 +405,7 @@ const Dashboard: React.FC = () => {
                   {daysInMonth.map(d => {
                       const isToday = dateHelpers.isToday(d.format('YYYY-MM-DD'));
                       return (
-                          <div key={d.toString()} className="min-w-[3.5rem] sm:min-w-[2rem] m-0.5 sm:m-1 flex flex-col items-center flex-shrink-0">
+                          <div key={d.toString()} className="min-w-[4rem] sm:min-w-[2rem] m-0.5 sm:m-1 flex flex-col items-center flex-shrink-0">
                               <span className={`text-[10px] mb-0.5 ${isToday ? 'text-green-600 font-bold' : 'text-slate-400'}`}>
                                   {d.date()}
                               </span>
@@ -383,6 +435,8 @@ const Dashboard: React.FC = () => {
                       entries={entries}
                       onToggle={handleToggleEntry}
                       onAddSegment={(id) => { setSelectedSlotId(id); setShowAddSegment(true); }}
+                      onEditSegment={handleEditSegmentClick}
+                      onDeleteSegment={handleDeleteSegmentDirectly}
                       onDeleteSlot={handleDeleteSlot}
                       />
                   ))}
@@ -471,6 +525,56 @@ const Dashboard: React.FC = () => {
                  {actionLoading && <svg className="animate-spin h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle><path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>}
                  Add Habit
               </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Edit Segment Modal */}
+      {showEditSegment && editingSegment && (
+        <div className="fixed inset-0 bg-black/40 backdrop-blur-sm flex items-center justify-center z-50">
+          <div className="bg-white dark:bg-dark-card p-8 rounded-3xl w-full max-w-sm shadow-2xl">
+            <h3 className="text-xl font-bold mb-6 dark:text-white">Edit Habit</h3>
+            <div className="mb-6">
+              <label className="block text-xs font-bold text-slate-400 uppercase tracking-wider mb-2">Habit Name</label>
+              <input 
+                value={newSegmentName} 
+                onChange={e => setNewSegmentName(e.target.value)}
+                className="w-full border-2 border-slate-200 dark:border-slate-700 p-3 rounded-xl dark:bg-slate-800 dark:text-white focus:border-green-500 focus:outline-none text-lg"
+              />
+            </div>
+            <div className="mb-8">
+              <label className="block text-xs font-bold text-slate-400 uppercase tracking-wider mb-3">Color Tag</label>
+              <div className="flex gap-3 flex-wrap">
+                {COLORS.map(c => (
+                  <button 
+                    key={c}
+                    type="button"
+                    onClick={() => setNewSegmentColor(c)}
+                    className={`w-8 h-8 rounded-full transition-all hover:scale-110 ${newSegmentColor === c ? 'ring-4 ring-offset-2 ring-slate-200 dark:ring-offset-dark-card scale-110' : 'opacity-70 hover:opacity-100'}`}
+                    style={{ backgroundColor: c }}
+                  />
+                ))}
+              </div>
+            </div>
+            <div className="flex justify-between items-center">
+              <button 
+                type="button"
+                onClick={handleDeleteSegmentFromModal}
+                className="px-4 py-2.5 text-red-500 font-bold hover:bg-red-50 dark:hover:bg-red-900/20 rounded-xl transition flex items-center gap-1"
+              >
+                <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                </svg>
+                Delete
+              </button>
+              <div className="flex gap-3">
+                <button type="button" onClick={() => setShowEditSegment(false)} className="px-5 py-2.5 text-slate-500 font-medium hover:bg-slate-100 dark:hover:bg-slate-800 rounded-xl transition">Cancel</button>
+                <button type="button" disabled={actionLoading} onClick={handleSaveSegment} className="px-5 py-2.5 bg-green-600 text-white rounded-xl font-bold shadow-lg hover:bg-green-700 transition flex items-center gap-2">
+                   {actionLoading && <svg className="animate-spin h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle><path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>}
+                   Save
+                </button>
+              </div>
             </div>
           </div>
         </div>
