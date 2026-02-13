@@ -6,7 +6,7 @@ const API_URL = 'http://localhost:5000/api';
 
 const client = axios.create({
   baseURL: API_URL,
-  timeout: 200, // Very fast timeout to fallback instantly to offline mode
+  timeout: 500, // Short timeout to quickly fallback to offline mode if backend is missing
 });
 
 // --- OFFLINE STORAGE HELPERS ---
@@ -142,9 +142,12 @@ export const getSegments = async (month: string) => {
   } catch (err) {
     const segments = getLocal<HabitSegment>(STORAGE_KEYS.SEGMENTS).filter(s => s.deviceId === deviceId);
     
-    // Mongo-like date range logic
+    // Calculate correct end of month
+    const [y, m] = month.split('-').map(Number);
+    const daysInMonth = new Date(y, m, 0).getDate();
+    
     const startOfMonth = `${month}-01`;
-    const endOfMonth = `${month}-31`;
+    const endOfMonth = `${month}-${daysInMonth}`;
     
     const filtered = segments.filter(s => {
        const startsBeforeEnd = s.startDate <= endOfMonth;
@@ -166,9 +169,14 @@ export const createSegment = async (slotId: string, name: string, color: string,
     // Close existing active segment for this slot
     const existingIndex = segments.findIndex(s => s.deviceId === deviceId && s.slotId === slotId && s.endDate === null);
     if (existingIndex !== -1) {
+        // Simple date subtraction for offline mode
         const d = new Date(startDate);
         d.setDate(d.getDate() - 1);
-        segments[existingIndex].endDate = d.toISOString().split('T')[0];
+        // Format as YYYY-MM-DD manually to avoid timezone shifts
+        const year = d.getFullYear();
+        const month = String(d.getMonth() + 1).padStart(2, '0');
+        const day = String(d.getDate()).padStart(2, '0');
+        segments[existingIndex].endDate = `${year}-${month}-${day}`;
     }
 
     const newSegment = { _id: generateId(), deviceId, slotId, name, color, startDate, endDate: null };

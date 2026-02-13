@@ -283,9 +283,12 @@ const Dashboard: React.FC = () => {
            <button 
              type="button"
              onClick={() => window.print()} 
-             className="text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 px-3 py-1 text-sm border border-slate-200 dark:border-slate-700 rounded-md"
+             className="text-slate-500 hover:text-primary dark:hover:text-primary px-3 py-1.5 text-sm font-medium border border-slate-200 dark:border-slate-700 rounded-lg hover:bg-slate-50 dark:hover:bg-slate-800 transition-all flex items-center gap-2"
            >
-             Printable Version
+             <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z" />
+             </svg>
+             <span className="hidden sm:inline">Printable Version</span>
            </button>
            <button 
              type="button"
@@ -350,7 +353,7 @@ const Dashboard: React.FC = () => {
                   {daysInMonth.map(d => {
                       const isToday = dateHelpers.isToday(d.format('YYYY-MM-DD'));
                       return (
-                          <div key={d.toString()} className="min-w-[3rem] sm:min-w-[2rem] m-0.5 sm:m-1 flex flex-col items-center flex-shrink-0">
+                          <div key={d.toString()} className="min-w-[3.5rem] sm:min-w-[2rem] m-0.5 sm:m-1 flex flex-col items-center flex-shrink-0">
                               <span className={`text-[10px] mb-0.5 ${isToday ? 'text-green-600 font-bold' : 'text-slate-400'}`}>
                                   {d.date()}
                               </span>
