@@ -16,6 +16,13 @@ mongoose.connect(MONGO_URI)
   .then(() => console.log('MongoDB Connected'))
   .catch(err => console.log(err));
 
+// --- HELPERS ---
+const getPreviousDate = (dateStr) => {
+  const d = new Date(dateStr);
+  d.setDate(d.getDate() - 1);
+  return d.toISOString().split('T')[0];
+};
+
 // --- ROUTES ---
 
 // 1. Device
@@ -146,7 +153,7 @@ app.post('/api/segments', async (req, res) => {
     }
 
     const segment = await HabitSegment.create({
-      deviceId, slotId, name, color, startDate
+      deviceId, slotId, name, color, startDate, streak: 0, lastCompletedDate: null
     });
     res.json(segment);
   } catch (err) {
@@ -203,7 +210,37 @@ app.post('/api/entries/toggle', async (req, res) => {
       { completed },
       { new: true, upsert: true }
     );
-    res.json(entry);
+
+    // Recalculate Streak
+    // 1. Fetch all completed entries for this segment, sorted desc
+    const completedEntries = await HabitEntry.find({ 
+      segmentId, 
+      completed: true 
+    }).sort({ date: -1 });
+
+    let streak = 0;
+    let lastCompletedDate = null;
+
+    if (completedEntries.length > 0) {
+      lastCompletedDate = completedEntries[0].date;
+      streak = 1;
+      let currentDate = lastCompletedDate;
+      
+      for (let i = 1; i < completedEntries.length; i++) {
+        const prevDate = getPreviousDate(currentDate);
+        if (completedEntries[i].date === prevDate) {
+          streak++;
+          currentDate = prevDate;
+        } else {
+          break;
+        }
+      }
+    }
+
+    // Update Segment
+    await HabitSegment.findByIdAndUpdate(segmentId, { streak, lastCompletedDate });
+
+    res.json({ entry, streak, lastCompletedDate });
   } catch (err) {
     res.status(500).json({ error: err.message });
   }

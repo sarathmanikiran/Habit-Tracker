@@ -42,6 +42,16 @@ const generateId = () => {
 // Simulate minimal network delay for realistic feel in offline mode
 const delay = (ms: number) => new Promise(res => setTimeout(res, ms));
 
+// Helper for streak
+const getPreviousDate = (dateStr: string) => {
+  const d = new Date(dateStr);
+  d.setDate(d.getDate() - 1);
+  const year = d.getFullYear();
+  const month = String(d.getMonth() + 1).padStart(2, '0');
+  const day = String(d.getDate()).padStart(2, '0');
+  return `${year}-${month}-${day}`;
+};
+
 export const getDeviceId = (): string => {
   let id = localStorage.getItem('habit_device_id');
   if (!id) {
@@ -169,17 +179,15 @@ export const createSegment = async (slotId: string, name: string, color: string,
     // Close existing active segment for this slot
     const existingIndex = segments.findIndex(s => s.deviceId === deviceId && s.slotId === slotId && s.endDate === null);
     if (existingIndex !== -1) {
-        // Simple date subtraction for offline mode
         const d = new Date(startDate);
         d.setDate(d.getDate() - 1);
-        // Format as YYYY-MM-DD manually to avoid timezone shifts
         const year = d.getFullYear();
         const month = String(d.getMonth() + 1).padStart(2, '0');
         const day = String(d.getDate()).padStart(2, '0');
         segments[existingIndex].endDate = `${year}-${month}-${day}`;
     }
 
-    const newSegment = { _id: generateId(), deviceId, slotId, name, color, startDate, endDate: null };
+    const newSegment = { _id: generateId(), deviceId, slotId, name, color, startDate, endDate: null, streak: 0, lastCompletedDate: null };
     segments.push(newSegment);
     setLocal(STORAGE_KEYS.SEGMENTS, segments);
     return { data: newSegment };
@@ -245,6 +253,39 @@ export const toggleEntry = async (segmentId: string, date: string, completed: bo
         entries.push(entry);
     }
     setLocal(STORAGE_KEYS.ENTRIES, entries);
-    return { data: entry };
+
+    // Calculate Streak
+    const segmentEntries = entries
+        .filter(e => e.segmentId === segmentId && e.completed)
+        .sort((a, b) => b.date.localeCompare(a.date));
+    
+    let streak = 0;
+    let lastCompletedDate = null;
+    
+    if (segmentEntries.length > 0) {
+        lastCompletedDate = segmentEntries[0].date;
+        streak = 1;
+        let currentDate = lastCompletedDate;
+        for (let i = 1; i < segmentEntries.length; i++) {
+            const prev = getPreviousDate(currentDate);
+            if (segmentEntries[i].date === prev) {
+                streak++;
+                currentDate = prev;
+            } else {
+                break;
+            }
+        }
+    }
+
+    // Update Segment in storage
+    const segments = getLocal<HabitSegment>(STORAGE_KEYS.SEGMENTS);
+    const segIndex = segments.findIndex(s => s._id === segmentId);
+    if (segIndex !== -1) {
+        segments[segIndex].streak = streak;
+        segments[segIndex].lastCompletedDate = lastCompletedDate;
+        setLocal(STORAGE_KEYS.SEGMENTS, segments);
+    }
+
+    return { data: { entry, streak, lastCompletedDate } };
   }
 };

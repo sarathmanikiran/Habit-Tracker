@@ -19,6 +19,8 @@ export interface HabitSegment {
   color: string;
   startDate: string; // ISO Date string
   endDate: string | null;
+  streak?: number;
+  lastCompletedDate?: string | null;
 }
 
 export interface HabitEntry {

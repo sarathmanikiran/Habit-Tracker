@@ -207,6 +207,7 @@ const Dashboard: React.FC = () => {
   };
 
   const handleToggleEntry = useCallback(async (segmentId: string, date: string, currentStatus: boolean) => {
+    // Optimistic entry update
     setEntries(prev => {
       const exists = prev.find(e => e.segmentId === segmentId && e.date === date);
       if (exists) {
@@ -216,9 +217,24 @@ const Dashboard: React.FC = () => {
     });
 
     try {
-      await api.toggleEntry(segmentId, date, !currentStatus);
+      const res = await api.toggleEntry(segmentId, date, !currentStatus);
+      // Update segment streak info from response
+      if (res.data.streak !== undefined) {
+         setSegments(prev => prev.map(seg => 
+            seg._id === segmentId 
+                ? { ...seg, streak: res.data.streak, lastCompletedDate: res.data.lastCompletedDate } 
+                : seg
+         ));
+      }
+      
+      // Reconcile entry if needed (e.g. real ID)
+      if (res.data.entry) {
+        setEntries(prev => prev.map(e => (e.segmentId === segmentId && e.date === date) ? res.data.entry : e));
+      }
+
     } catch (e) {
       console.error(e);
+      // Revert if error? (Skipped for simplicity, but good practice in production)
     }
   }, []);
 
@@ -336,8 +352,9 @@ const Dashboard: React.FC = () => {
              type="button"
              onClick={() => window.print()} 
              className="text-slate-500 hover:text-primary dark:hover:text-primary px-3 py-1.5 text-sm font-medium border border-slate-200 dark:border-slate-700 rounded-lg hover:bg-slate-50 dark:hover:bg-slate-800 transition-all flex items-center gap-2"
+             title="Print Dashboard"
            >
-             <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+             <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z" />
              </svg>
              <span className="hidden sm:inline">Printable Version</span>
@@ -405,7 +422,7 @@ const Dashboard: React.FC = () => {
                   {daysInMonth.map(d => {
                       const isToday = dateHelpers.isToday(d.format('YYYY-MM-DD'));
                       return (
-                          <div key={d.toString()} className="min-w-[3rem] sm:min-w-[2rem] m-0.5 sm:m-1 flex flex-col items-center flex-shrink-0">
+                          <div key={d.toString()} className="min-w-[3.5rem] sm:min-w-[2rem] m-0.5 sm:m-1 flex flex-col items-center flex-shrink-0">
                               <span className={`text-[10px] mb-0.5 ${isToday ? 'text-green-600 font-bold' : 'text-slate-400'}`}>
                                   {d.date()}
                               </span>

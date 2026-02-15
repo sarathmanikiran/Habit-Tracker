@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useMemo } from 'react';
 import { useSortable } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
 import dayjs from 'dayjs';
@@ -59,6 +59,21 @@ const SlotRow: React.FC<SlotRowProps> = ({
 
   const activeSegment = slotSegments.length > 0 ? slotSegments[slotSegments.length - 1] : undefined;
 
+  // Streak logic: Streak is active if last completion was today or yesterday
+  const effectiveStreak = useMemo(() => {
+    if (!activeSegment?.streak || !activeSegment.lastCompletedDate) return 0;
+    
+    // Check if the streak is current (completed today or yesterday)
+    // We use basic string comparison for YYYY-MM-DD which is robust enough here
+    const todayStr = dayjs().format('YYYY-MM-DD');
+    const yesterdayStr = dayjs().subtract(1, 'day').format('YYYY-MM-DD');
+    
+    if (activeSegment.lastCompletedDate >= yesterdayStr) {
+        return activeSegment.streak;
+    }
+    return 0;
+  }, [activeSegment]);
+
   return (
     <div
       ref={setNodeRef}
@@ -97,11 +112,22 @@ const SlotRow: React.FC<SlotRowProps> = ({
                 />
                 <button 
                   onClick={() => onEditSegment(activeSegment)}
-                  className="text-sm font-medium truncate text-slate-700 dark:text-slate-200 mr-2 max-w-[80px] sm:max-w-[120px] hover:text-primary hover:underline text-left focus:outline-none" 
+                  className="text-sm font-medium truncate text-slate-700 dark:text-slate-200 mr-2 max-w-[60px] sm:max-w-[100px] hover:text-primary hover:underline text-left focus:outline-none" 
                   title="Edit Habit"
                 >
                   {activeSegment.name}
                 </button>
+                
+                {/* Streak Counter */}
+                {effectiveStreak > 0 && (
+                    <div className="flex items-center text-orange-500 mr-2 flex-shrink-0" title={`${effectiveStreak} day streak`}>
+                        <span className="text-xs font-bold mr-0.5">{effectiveStreak}</span>
+                        <svg xmlns="http://www.w3.org/2000/svg" className="h-3.5 w-3.5" viewBox="0 0 20 20" fill="currentColor">
+                           <path fillRule="evenodd" d="M12.395 2.553a1 1 0 00-1.45-.385c-.345.23-.614.558-.822.88-.214.33-.403.713-.57 1.116-.334.804-.614 1.768-.84 2.734a31.365 31.365 0 00-.613 3.58 2.64 2.64 0 01-.945-1.067c-.328-.68-.398-1.534-.398-2.654A1 1 0 005.05 6.05 6.981 6.981 0 003 11a7 7 0 1011.95-4.95c-.592-.591-.98-.985-1.348-1.467-.363-.476-.724-1.063-1.207-2.03zM12.12 15.12A3 3 0 017 13s.879.5 2.5.5c0-1 .5-4 1.25-4.5.5 1 .786 1.293 1.371 1.879A2.99 2.99 0 0113 13a2.99 2.99 0 01-.879 2.121z" clipRule="evenodd" />
+                        </svg>
+                    </div>
+                )}
+
                 <div className="flex items-center opacity-100 sm:opacity-0 sm:group-hover/edit:opacity-100 transition-opacity">
                   <button
                     onClick={() => onEditSegment(activeSegment)}

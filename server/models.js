@@ -18,7 +18,9 @@ const HabitSegmentSchema = new mongoose.Schema({
   name: { type: String, required: true },
   color: { type: String, required: true },
   startDate: { type: String, required: true, index: true }, // YYYY-MM-DD
-  endDate: { type: String, default: null } // YYYY-MM-DD or null
+  endDate: { type: String, default: null }, // YYYY-MM-DD or null
+  streak: { type: Number, default: 0 },
+  lastCompletedDate: { type: String, default: null }
 });
 
 const HabitEntrySchema = new mongoose.Schema({
