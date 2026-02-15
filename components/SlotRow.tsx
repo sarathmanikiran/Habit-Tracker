@@ -82,7 +82,7 @@ const SlotRow: React.FC<SlotRowProps> = ({
     >
       {/* Sticky Left Column */}
       <div className="w-[140px] sm:w-[240px] flex-shrink-0 flex items-center p-3 border-r border-slate-100 dark:border-slate-700 bg-white dark:bg-dark-card z-10 sticky left-0">
-        <div {...attributes} {...listeners} className="mr-3 cursor-grab text-slate-400 hover:text-slate-600 touch-none">
+        <div {...attributes} {...listeners} className="mr-3 cursor-grab text-slate-400 hover:text-slate-600 touch-none print:hidden">
           <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 8h16M4 16h16" />
           </svg>
@@ -94,7 +94,7 @@ const SlotRow: React.FC<SlotRowProps> = ({
             <button 
               type="button"
               onClick={() => onDeleteSlot(slot._id)}
-              className="text-slate-300 hover:text-red-500 transition-colors p-1 opacity-100 sm:opacity-0 sm:group-hover:opacity-100"
+              className="text-slate-300 hover:text-red-500 transition-colors p-1 opacity-100 sm:opacity-0 sm:group-hover:opacity-100 print:hidden"
               title="Delete Time Slot"
             >
               <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" viewBox="0 0 20 20" fill="currentColor">
@@ -107,7 +107,7 @@ const SlotRow: React.FC<SlotRowProps> = ({
             {activeSegment ? (
               <div className="flex items-center group/edit">
                 <div 
-                  className="w-2 h-2 rounded-full mr-2 flex-shrink-0" 
+                  className="w-2 h-2 rounded-full mr-2 flex-shrink-0 print-force-bg" 
                   style={{ backgroundColor: activeSegment.color }} 
                 />
                 <button 
@@ -128,7 +128,7 @@ const SlotRow: React.FC<SlotRowProps> = ({
                     </div>
                 )}
 
-                <div className="flex items-center opacity-100 sm:opacity-0 sm:group-hover/edit:opacity-100 transition-opacity">
+                <div className="flex items-center opacity-100 sm:opacity-0 sm:group-hover/edit:opacity-100 transition-opacity print:hidden">
                   <button
                     onClick={() => onEditSegment(activeSegment)}
                     className="text-slate-400 hover:text-primary transition-colors p-1"
@@ -153,7 +153,7 @@ const SlotRow: React.FC<SlotRowProps> = ({
               <button 
                 type="button"
                 onClick={() => onAddSegment(slot._id)}
-                className="text-xs text-primary hover:underline flex items-center mt-1 whitespace-nowrap"
+                className="text-xs text-primary hover:underline flex items-center mt-1 whitespace-nowrap print:hidden"
               >
                 + Add Habit
               </button>

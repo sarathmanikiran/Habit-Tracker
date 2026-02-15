@@ -43,12 +43,19 @@
         body {
           background-color: white !important;
           color: black !important;
-          -webkit-print-color-adjust: exact;
-          print-color-adjust: exact;
         }
-        .no-print {
+        
+        /* Force exact color rendering for all elements in print */
+        * {
+          -webkit-print-color-adjust: exact !important;
+          print-color-adjust: exact !important;
+          color-adjust: exact !important;
+        }
+
+        .no-print, .print\:hidden {
           display: none !important;
         }
+        
         /* Force scroll containers to expand */
         .print-scroll-expand {
           overflow: visible !important;
@@ -59,10 +66,12 @@
           box-shadow: none !important;
           border: none !important;
         }
+        
         /* Ensure sticky headers don't float in weird places */
         .sticky {
           position: static !important;
         }
+        
         /* Hide shadows and backgrounds for clean print */
         .shadow-sm, .shadow-md, .shadow-lg, .shadow-xl, .shadow-2xl {
           box-shadow: none !important;
@@ -72,13 +81,13 @@
         .print-force-bg {
           -webkit-print-color-adjust: exact !important;
           print-color-adjust: exact !important;
-          box-shadow: none !important; /* Remove shadows that might obscure content */
+          box-shadow: none !important; 
         }
         
         /* Ensure white checkmarks are visible on colored backgrounds */
         .print-force-bg svg {
             color: white !important;
-            filter: none !important; /* Remove drop shadows on icons */
+            filter: none !important; 
         }
 
         /* Clean up borders */
