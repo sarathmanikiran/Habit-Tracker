@@ -74,6 +74,17 @@ const SlotRow: React.FC<SlotRowProps> = ({
     return 0;
   }, [activeSegment]);
 
+  // Milestone logic
+  const nextMilestone = useMemo(() => {
+    if (effectiveStreak < 7) return 7;
+    if (effectiveStreak < 14) return 14;
+    if (effectiveStreak < 21) return 21;
+    if (effectiveStreak < 30) return 30;
+    if (effectiveStreak < 60) return 60;
+    if (effectiveStreak < 90) return 90;
+    return Math.ceil((effectiveStreak + 1) / 100) * 100;
+  }, [effectiveStreak]);
+
   return (
     <div
       ref={setNodeRef}
@@ -105,49 +116,55 @@ const SlotRow: React.FC<SlotRowProps> = ({
           
           <div className="mt-1">
             {activeSegment ? (
-              <div className="flex items-center group/edit">
-                <div 
-                  className="w-2 h-2 rounded-full mr-2 flex-shrink-0 print-force-bg" 
-                  style={{ backgroundColor: activeSegment.color }} 
-                />
-                <button 
-                  onClick={() => onEditSegment(activeSegment)}
-                  className="text-sm font-medium truncate text-slate-700 dark:text-slate-200 mr-2 max-w-[60px] sm:max-w-[100px] hover:text-primary hover:underline text-left focus:outline-none" 
-                  title="Edit Habit"
-                >
-                  {activeSegment.name}
-                </button>
-                
-                {/* Streak Counter */}
-                {effectiveStreak > 0 && (
-                    <div className="flex items-center text-orange-500 mr-2 flex-shrink-0" title={`${effectiveStreak} day streak`}>
-                        <span className="text-xs font-bold mr-0.5">{effectiveStreak}</span>
+              <div className="flex flex-col">
+                <div className="flex items-center group/edit">
+                    <div 
+                    className="w-2 h-2 rounded-full mr-2 flex-shrink-0 print-force-bg" 
+                    style={{ backgroundColor: activeSegment.color }} 
+                    />
+                    <button 
+                    onClick={() => onEditSegment(activeSegment)}
+                    className="text-sm font-medium truncate text-slate-700 dark:text-slate-200 mr-2 max-w-[60px] sm:max-w-[100px] hover:text-primary hover:underline text-left focus:outline-none" 
+                    title="Edit Habit"
+                    >
+                    {activeSegment.name}
+                    </button>
+                    
+                    <div className="flex items-center opacity-100 sm:opacity-0 sm:group-hover/edit:opacity-100 transition-opacity print:hidden">
+                    <button
+                        onClick={() => onEditSegment(activeSegment)}
+                        className="text-slate-400 hover:text-primary transition-colors p-1"
+                        title="Edit Habit"
+                    >
                         <svg xmlns="http://www.w3.org/2000/svg" className="h-3.5 w-3.5" viewBox="0 0 20 20" fill="currentColor">
-                           <path fillRule="evenodd" d="M12.395 2.553a1 1 0 00-1.45-.385c-.345.23-.614.558-.822.88-.214.33-.403.713-.57 1.116-.334.804-.614 1.768-.84 2.734a31.365 31.365 0 00-.613 3.58 2.64 2.64 0 01-.945-1.067c-.328-.68-.398-1.534-.398-2.654A1 1 0 005.05 6.05 6.981 6.981 0 003 11a7 7 0 1011.95-4.95c-.592-.591-.98-.985-1.348-1.467-.363-.476-.724-1.063-1.207-2.03zM12.12 15.12A3 3 0 017 13s.879.5 2.5.5c0-1 .5-4 1.25-4.5.5 1 .786 1.293 1.371 1.879A2.99 2.99 0 0113 13a2.99 2.99 0 01-.879 2.121z" clipRule="evenodd" />
+                        <path d="M13.586 3.586a2 2 0 112.828 2.828l-.793.793-2.828-2.828.793-.793zM11.379 5.793L3 14.172V17h2.828l8.38-8.379-2.83-2.828z" />
                         </svg>
+                    </button>
+                    <button
+                        onClick={() => onDeleteSegment(activeSegment._id)}
+                        className="text-slate-400 hover:text-red-500 transition-colors p-1"
+                        title="Delete Habit"
+                    >
+                        <svg xmlns="http://www.w3.org/2000/svg" className="h-3.5 w-3.5" viewBox="0 0 20 20" fill="currentColor">
+                        <path fillRule="evenodd" d="M9 2a1 1 0 00-.894.553L7.382 4H4a1 1 0 000 2v10a2 2 0 002 2h8a2 2 0 002-2V6a1 1 0 100-2h-3.382l-.724-1.447A1 1 0 0011 2H9zM7 8a1 1 0 012 0v6a1 1 0 11-2 0V8zm5-1a1 1 0 00-1 1v6a1 1 0 102 0V8a1 1 0 00-1-1z" clipRule="evenodd" />
+                        </svg>
+                    </button>
+                    </div>
+                </div>
+                
+                {/* Streak Counter & Milestone */}
+                {effectiveStreak > 0 && (
+                    <div className="flex items-center mt-1 text-[10px] text-slate-400">
+                        <div className="flex items-center text-orange-500 mr-2" title={`${effectiveStreak} day streak`}>
+                            <svg xmlns="http://www.w3.org/2000/svg" className="h-3 w-3 mr-0.5" viewBox="0 0 20 20" fill="currentColor">
+                                <path fillRule="evenodd" d="M12.395 2.553a1 1 0 00-1.45-.385c-.345.23-.614.558-.822.88-.214.33-.403.713-.57 1.116-.334.804-.614 1.768-.84 2.734a31.365 31.365 0 00-.613 3.58 2.64 2.64 0 01-.945-1.067c-.328-.68-.398-1.534-.398-2.654A1 1 0 005.05 6.05 6.981 6.981 0 003 11a7 7 0 1011.95-4.95c-.592-.591-.98-.985-1.348-1.467-.363-.476-.724-1.063-1.207-2.03zM12.12 15.12A3 3 0 017 13s.879.5 2.5.5c0-1 .5-4 1.25-4.5.5 1 .786 1.293 1.371 1.879A2.99 2.99 0 0113 13a2.99 2.99 0 01-.879 2.121z" clipRule="evenodd" />
+                            </svg>
+                            <span className="font-bold">{effectiveStreak}</span>
+                        </div>
+                        <span className="text-slate-300 dark:text-slate-600 mr-1">|</span>
+                        <span>Next: {nextMilestone} days</span>
                     </div>
                 )}
-
-                <div className="flex items-center opacity-100 sm:opacity-0 sm:group-hover/edit:opacity-100 transition-opacity print:hidden">
-                  <button
-                    onClick={() => onEditSegment(activeSegment)}
-                    className="text-slate-400 hover:text-primary transition-colors p-1"
-                    title="Edit Habit"
-                  >
-                    <svg xmlns="http://www.w3.org/2000/svg" className="h-3.5 w-3.5" viewBox="0 0 20 20" fill="currentColor">
-                      <path d="M13.586 3.586a2 2 0 112.828 2.828l-.793.793-2.828-2.828.793-.793zM11.379 5.793L3 14.172V17h2.828l8.38-8.379-2.83-2.828z" />
-                    </svg>
-                  </button>
-                  <button
-                    onClick={() => onDeleteSegment(activeSegment._id)}
-                    className="text-slate-400 hover:text-red-500 transition-colors p-1"
-                    title="Delete Habit"
-                  >
-                    <svg xmlns="http://www.w3.org/2000/svg" className="h-3.5 w-3.5" viewBox="0 0 20 20" fill="currentColor">
-                      <path fillRule="evenodd" d="M9 2a1 1 0 00-.894.553L7.382 4H4a1 1 0 000 2v10a2 2 0 002 2h8a2 2 0 002-2V6a1 1 0 100-2h-3.382l-.724-1.447A1 1 0 0011 2H9zM7 8a1 1 0 012 0v6a1 1 0 11-2 0V8zm5-1a1 1 0 00-1 1v6a1 1 0 102 0V8a1 1 0 00-1-1z" clipRule="evenodd" />
-                    </svg>
-                  </button>
-                </div>
               </div>
             ) : (
               <button 

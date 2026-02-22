@@ -25,7 +25,7 @@ const HabitCell: React.FC<HabitCellProps> = ({ date, isActive, isCompleted, colo
       onClick={onToggle}
       className={`
         min-w-[3.5rem] h-14 sm:min-w-[2rem] sm:h-8 m-0.5 sm:m-1 rounded-xl transition-all duration-300 ease-out border flex-shrink-0
-        flex items-center justify-center cursor-pointer relative group print-force-bg
+        flex items-center justify-center cursor-pointer relative group print-force-bg print:border-2 print:border-slate-400
         ${isCompleted ? 'scale-100' : 'scale-95 sm:scale-90 hover:scale-100'}
         ${today && !isCompleted ? 'ring-2 ring-offset-1 ring-offset-slate-50 dark:ring-offset-dark ring-slate-400' : ''}
       `}

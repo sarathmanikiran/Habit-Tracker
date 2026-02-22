@@ -411,7 +411,7 @@ const Dashboard: React.FC = () => {
         </div>
 
         {/* --- MAIN GRID (SYNCHRONIZED SCROLL) --- */}
-        <div className="mb-12 print-scroll-expand overflow-auto rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-dark-card shadow-sm max-h-[65vh]">
+        <div className="mb-12 print-scroll-expand overflow-x-auto rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-dark-card shadow-sm">
           <div className="min-w-max">
             {/* Sticky Header Row */}
             <div className="sticky top-0 z-20 flex border-b border-slate-200 dark:border-slate-700 bg-white dark:bg-dark-card text-xs font-bold text-slate-400 uppercase tracking-wider">
