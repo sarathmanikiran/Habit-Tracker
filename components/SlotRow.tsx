@@ -55,7 +55,7 @@ const SlotRow: React.FC<SlotRowProps> = ({
     s.slotId === slot._id && 
     s.startDate <= monthEndStr && 
     (s.endDate === null || s.endDate >= monthStartStr)
-  );
+  ).sort((a, b) => a.startDate.localeCompare(b.startDate));
 
   const activeSegment = slotSegments.length > 0 ? slotSegments[slotSegments.length - 1] : undefined;
 
@@ -184,11 +184,16 @@ const SlotRow: React.FC<SlotRowProps> = ({
         {days.map((day) => {
           const dateStr = formatDate(day);
           
-          const segmentForDay = segments.find(s => 
+          let segmentForDay = segments.find(s => 
             s.slotId === slot._id && 
             s.startDate <= dateStr && 
             (s.endDate === null || s.endDate >= dateStr)
           );
+
+          // Backfill logic: Allow interaction for days BEFORE the start date of the current active segment
+          if (!segmentForDay && activeSegment && dateStr < activeSegment.startDate) {
+             segmentForDay = activeSegment;
+          }
 
           const isCompleted = segmentForDay 
             ? entries.some(e => e.segmentId === segmentForDay._id && e.date === dateStr && e.completed)
