@@ -51,7 +51,7 @@ const AnalyticsPanel: React.FC<AnalyticsPanelProps> = ({ data, loading }) => {
                 tick={{ fontSize: 10, fill: '#94A3B8' }} 
                 tickLine={false} 
                 axisLine={false}
-                tickFormatter={(val) => val.split('-')[2]} // Show day only
+                tickFormatter={(val) => val.split('-')[2]} // Show day only (day)
                 interval={2}
                 minTickGap={10}
               />
